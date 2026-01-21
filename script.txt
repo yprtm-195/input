@@ -205,7 +205,7 @@
         btn.id = "tombolMaster";
         btn.innerHTML = "🚀 HAJAR BOS";
         Object.assign(btn.style, {
-            position: "fixed", bottom: "80px", right: "20px", zIndex: "99999",
+            position: "fixed", bottom: "80px", left: "20px", zIndex: "99999",
             backgroundColor: "#dc3545", color: "white", padding: "15px 30px",
             borderRadius: "50px", fontWeight: "bold", boxShadow: "0 5px 15px rgba(0,0,0,0.4)",
             border: "2px solid white"
