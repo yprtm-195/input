@@ -100,11 +100,22 @@ button:active {
     transform: scale(0.98);
 }
 
-#generateAndCopy {
-    background-color: #28a745;
+#downloadScript {
+
+    background-color: #28a745 !important;
+
+    color: #fff !important;
+
+    border: none !important;
+
 }
-#generateAndCopy:hover {
-    background-color: #218838;
+
+
+
+#downloadScript:hover {
+
+    background-color: #218838 !important;
+
 }
 
 #resetData {
