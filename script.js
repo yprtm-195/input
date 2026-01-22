@@ -1,13 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     const tableBody = document.querySelector('#productTable tbody');
-    const generateAndCopyButton = document.getElementById('generateAndCopy');
+    const downloadScriptButton = document.getElementById('downloadScript'); // Ganti ID
     const resetDataButton = document.getElementById('resetData');
-    const outputTextarea = document.getElementById('output');
+    // const outputTextarea = document.getElementById('output'); // Hapus
     
     // --- NUMPAD ELEMENTS ---
     const numpad = document.getElementById('customNumpad');
     const numpadBtns = document.querySelectorAll('.numpad-btn');
-    let activeInput = null; // Nyimpen input mana yang lagi diketik
+    let activeInput = null; 
 
     const productCatalog = [
         "80GR - EAT MILK/CHOCOLATE",
@@ -80,11 +80,13 @@ document.addEventListener('DOMContentLoaded', () => {
         "250GR - COCKTAIL/BEEF COCKTAIL",
     ];
 
-    const tampermonkeyTemplate = `// ==UserScript==
-// @name         Patrick_Star (Fixed)
+    // Template harus pake fungsi karena kita butuh insert versi dinamis
+    function getTampermonkeyTemplate(version, dateString, hargaData) {
+        return `// ==UserScript==
+// @name         Patrick_Star_Auto_Fill
 // @namespace    http://tampermonkey.net/
-// @version      2.5
-// @description  Auto-fill harga (Clean Version)
+// @version      ${version}
+// @description  Auto-fill harga (Update: ${dateString})
 // @author       YPRTM
 // @match        https://www.appsheet.com/*
 // @grant        none
@@ -94,15 +96,30 @@ document.addEventListener('DOMContentLoaded', () => {
     'use strict';
 
     const databaseHarga = {
-{hargaData}
+${hargaData}
     };
 
     function isiData(inputElement, nilai) {
+        // 1. Fokus dulu
         inputElement.focus();
+
+        // 2. Hack: Set Value pake Native Prototype
+        // Ini wajib buat nembus state management framework (React/Angular/dll)
         let nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
         nativeInputValueSetter.call(inputElement, nilai);
+
+        // 3. Hack: Reset Value Tracker (Kalo ada)
+        // Biar framework sadar kalo ada perubahan nilai
+        let tracker = inputElement._valueTracker;
+        if (tracker) {
+            tracker.setValue("dummy_old_value");
+        }
+
+        // 4. Tembakin Event Wajib (Input & Change)
         inputElement.dispatchEvent(new Event('input', { bubbles: true }));
         inputElement.dispatchEvent(new Event('change', { bubbles: true }));
+
+        // 5. Lepas Fokus (Biasanya trigger save di sini)
         inputElement.blur(); 
     }
 
@@ -172,29 +189,23 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(pasangTombol, 3000);
     setInterval(pasangTombol, 2000);
 })();`;
+    }
 
     // --- FUNGSI BUAT NUMPAD ---
     function openNumpad(input) {
-        // Cek input sebelumnya dulu sebelum pindah
         if (activeInput && activeInput !== input) {
             if (activeInput.value.trim() === '') {
                 activeInput.value = '0';
-                activeInput.dispatchEvent(new Event('input')); // Save
+                activeInput.dispatchEvent(new Event('input')); 
             }
             activeInput.classList.remove('active-input');
         }
 
         activeInput = input;
-        
-        // Tandain input yang aktif
         input.classList.add('active-input');
-
-        // Scroll biar input keliatan (tapi ketutupan dikit gpp krn numpad di bawah)
         input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
         numpad.classList.add('show');
         
-        // Hapus '0' awal kalo mau ngetik baru
         if (input.value === '0') {
             input.value = '';
         }
@@ -203,36 +214,31 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeNumpad() {
         numpad.classList.remove('show');
         if (activeInput) {
-            // Balikin ke 0 kalo kosong
             if (activeInput.value.trim() === '') {
                 activeInput.value = '0';
-                activeInput.dispatchEvent(new Event('input')); // Trigger save localStorage
+                activeInput.dispatchEvent(new Event('input')); 
             }
             activeInput.classList.remove('active-input');
             activeInput = null;
         }
     }
 
-    // Logic Tombol Numpad
     numpadBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
-            e.preventDefault(); // Biar ga nge-submit atau aneh2
+            e.preventDefault(); 
             if (!activeInput) return;
 
             const val = btn.getAttribute('data-val');
             const id = btn.id;
 
             if (id === 'numpadDone') {
-                // Cari input selanjutnya
                 const allInputs = Array.from(document.querySelectorAll('input[type="number"]'));
                 const currentIndex = allInputs.indexOf(activeInput);
                 
                 if (currentIndex >= 0 && currentIndex < allInputs.length - 1) {
-                    // Masih ada input berikutnya -> Pindah
                     const nextInput = allInputs[currentIndex + 1];
                     openNumpad(nextInput);
                 } else {
-                    // Udah input terakhir -> Tutup
                     closeNumpad();
                 }
             } else if (id === 'numpadBackspace') {
@@ -240,22 +246,18 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (id === 'numpadClear') {
                 activeInput.value = '';
             } else {
-                // Input Angka Biasa
                 activeInput.value += val;
             }
 
-            // Trigger event biar kesimpen ke localStorage
             activeInput.dispatchEvent(new Event('input'));
         });
     });
 
-    // Tutup numpad kalo klik di luar area numpad & input
     document.addEventListener('click', (e) => {
         if (!numpad.contains(e.target) && !e.target.matches('input[type="number"]')) {
             closeNumpad();
         }
     });
-
 
     function populateTable() {
         productCatalog.forEach((productName, index) => {
@@ -266,38 +268,26 @@ document.addEventListener('DOMContentLoaded', () => {
             const savedNormal = localStorage.getItem(`harga_normal_${productName}`);
             const savedPromo = localStorage.getItem(`harga_promo_${productName}`);
             
-            // --- HARGA NORMAL ---
             const normalPriceCell = document.createElement('td');
             const normalPriceInput = document.createElement('input');
             normalPriceInput.type = 'number';
-            normalPriceInput.inputMode = 'none'; // MATIIN KEYBOARD BAWAAN HP
+            normalPriceInput.inputMode = 'none'; 
             normalPriceInput.id = `normal-price-${index}`;
             normalPriceInput.value = savedNormal !== null ? savedNormal : '0';
             
-            normalPriceInput.addEventListener('click', function() {
-                openNumpad(this);
-            });
-            
-            normalPriceInput.addEventListener('input', (e) => {
-                localStorage.setItem(`harga_normal_${productName}`, e.target.value);
-            });
+            normalPriceInput.addEventListener('click', function() { openNumpad(this); });
+            normalPriceInput.addEventListener('input', (e) => { localStorage.setItem(`harga_normal_${productName}`, e.target.value); });
             normalPriceCell.appendChild(normalPriceInput);
             
-            // --- HARGA PROMO ---
             const promoPriceCell = document.createElement('td');
             const promoPriceInput = document.createElement('input');
             promoPriceInput.type = 'number';
-            promoPriceInput.inputMode = 'none'; // MATIIN KEYBOARD BAWAAN HP
+            promoPriceInput.inputMode = 'none'; 
             promoPriceInput.id = `promo-price-${index}`;
             promoPriceInput.value = savedPromo !== null ? savedPromo : '0';
 
-            promoPriceInput.addEventListener('click', function() {
-                openNumpad(this);
-            });
-
-            promoPriceInput.addEventListener('input', (e) => {
-                localStorage.setItem(`harga_promo_${productName}`, e.target.value);
-            });
+            promoPriceInput.addEventListener('click', function() { openNumpad(this); });
+            promoPriceInput.addEventListener('input', (e) => { localStorage.setItem(`harga_promo_${productName}`, e.target.value); });
             promoPriceCell.appendChild(promoPriceInput);
 
             row.appendChild(nameCell);
@@ -307,7 +297,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    generateAndCopyButton.addEventListener('click', () => {
+    // --- LOGIKA UPDATE SCRIPT VIA BLOB ---
+    downloadScriptButton.addEventListener('click', () => {
         let data = {};
         let allNormalPricesFilled = true;
         productCatalog.forEach((productName, index) => {
@@ -328,14 +319,40 @@ document.addEventListener('DOMContentLoaded', () => {
         let hargaDataString = '';
         const keys = Object.keys(data);
         keys.forEach((key, index) => {
-            hargaDataString += `        "${key}": "${data[key]}"` + (index < keys.length - 1 ? ",\n" : "\n");
+            hargaDataString += `        "${key}": "${data[key]}"` + (index < keys.length - 1 ? "\n" : "\n");
         });
 
-        outputTextarea.value = tampermonkeyTemplate.replace('{hargaData}', hargaDataString);
-        outputTextarea.style.display = 'block';
-        outputTextarea.select();
-        document.execCommand('copy');
-        alert('Script berhasil dicopy!');
+        // 1. Generate Versi Dinamis (YYYY.MM.DD.HHmm)
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hour = String(now.getHours()).padStart(2, '0');
+        const minute = String(now.getMinutes()).padStart(2, '0');
+        
+        const versionString = `${year}.${month}.${day}.${hour}${minute}`;
+        const dateString = `${day}/${month}/${year} ${hour}:${minute}`;
+
+        // 2. Isi Template
+        const finalScript = getTampermonkeyTemplate(versionString, dateString, hargaDataString);
+
+        // 3. Bikin Blob (File Virtual)
+        const blob = new Blob([finalScript], { type: 'text/javascript' });
+        const url = URL.createObjectURL(blob);
+
+        // 4. Download / Install
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'patrick_star_auto_fill.user.js'; // Ekstensi .user.js wajib biar kedetect Tampermonkey
+        document.body.appendChild(a);
+        a.click();
+        
+        // Bersihin
+        setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            tampilkanToast(`🚀 Script siap! Cek notif/layar Tampermonkey.`);
+        }, 100);
     });
 
     resetDataButton.addEventListener('click', () => {
