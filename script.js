@@ -139,7 +139,7 @@ ${hargaData}
         if (terisi > 0) {
             tampilkanToast("✅ SUKSES: " + terisi + " Item Terisi & Dikunci!");
         } else {
-            alert("❌ GAGAL: Gak ada item yg cocok.\nCek apakah GRUP PRODUK udah dipilih?");
+            alert("❌ GAGAL: Gak ada item yg cocok.\\nCek apakah GRUP PRODUK udah dipilih?");
         }
     }
 
