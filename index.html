@@ -9,20 +9,52 @@
 <body>
     <div class="container">
         <h1>Input Harga Produk</h1>
-        <table id="productTable">
-            <thead>
-                <tr>
-                    <th>Nama Produk</th>
-                    <th>Harga Normal</th>
-                    <th>Harga Promo</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Product rows will be inserted here by JavaScript -->
-            </tbody>
-        </table>
-        <button id="generateAndCopy">Generate & Copy</button>
+        <div id="tableWrapper">
+            <table id="productTable">
+                <thead>
+                    <tr>
+                        <th>Nama Produk</th>
+                        <th>Harga Normal</th>
+                        <th>Harga Promo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Product rows will be inserted here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        <div class="button-group">
+            <button id="generateAndCopy">Generate & Copy</button>
+            <button id="resetData">Reset Data</button>
+        </div>
         <textarea id="output" rows="10" readonly></textarea>
+    </div>
+    <div id="customNumpad" class="numpad-container">
+        <div class="numpad-row">
+            <button class="numpad-btn" data-val="1">1</button>
+            <button class="numpad-btn" data-val="2">2</button>
+            <button class="numpad-btn" data-val="3">3</button>
+        </div>
+        <div class="numpad-row">
+            <button class="numpad-btn" data-val="4">4</button>
+            <button class="numpad-btn" data-val="5">5</button>
+            <button class="numpad-btn" data-val="6">6</button>
+        </div>
+        <div class="numpad-row">
+            <button class="numpad-btn" data-val="7">7</button>
+            <button class="numpad-btn" data-val="8">8</button>
+            <button class="numpad-btn" data-val="9">9</button>
+        </div>
+        <div class="numpad-row">
+            <button class="numpad-btn" data-val="000">000</button>
+            <button class="numpad-btn" data-val="0">0</button>
+            <button class="numpad-btn" data-val="00">00</button>
+        </div>
+        <div class="numpad-row">
+            <button class="numpad-btn numpad-action" id="numpadClear">C</button>
+            <button class="numpad-btn numpad-action" id="numpadBackspace">⌫</button>
+            <button class="numpad-btn numpad-done" id="numpadDone">OK</button>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
