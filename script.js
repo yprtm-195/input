@@ -1,7 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     const tableBody = document.querySelector('#productTable tbody');
     const generateAndCopyButton = document.getElementById('generateAndCopy');
+    const resetDataButton = document.getElementById('resetData');
     const outputTextarea = document.getElementById('output');
+    
+    // --- NUMPAD ELEMENTS ---
+    const numpad = document.getElementById('customNumpad');
+    const numpadBtns = document.querySelectorAll('.numpad-btn');
+    let activeInput = null; // Nyimpen input mana yang lagi diketik
 
     const productCatalog = [
         "80GR - EAT MILK/CHOCOLATE",
@@ -77,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tampermonkeyTemplate = `// ==UserScript==
 // @name         Patrick_Star (Fixed)
 // @namespace    http://tampermonkey.net/
-// @version      2.1
+// @version      2.5
 // @description  Auto-fill harga (Clean Version)
 // @author       YPRTM
 // @match        https://www.appsheet.com/*
@@ -87,177 +93,22 @@ document.addEventListener('DOMContentLoaded', () => {
 (function() {
     'use strict';
 
-    // ============================================================
-    // 🔽 AREA PASTE DATA DARI NOTEPAD LU DI BAWAH SINI 🔽
-    // ============================================================
     const databaseHarga = {
-        
-        "HARGA NORMAL| 80GR - EAT MILK/CHOCOLATE": "7900",
-        "HARGA PROMO| 80GR - EAT MILK/CHOCOLATE": "6900",
-        "HARGA NORMAL| 80GR - EAT MILK/HAZELNUT": "7900",
-        "HARGA PROMO| 80GR - EAT MILK/HAZELNUT": "6900",
-        "HARGA NORMAL| 80GR - EAT MILK/MARIE BISCUIT": "7900",
-        "HARGA PROMO| 80GR - EAT MILK/MARIE BISCUIT": "6900",
-        "HARGA NORMAL| 80GR - EAT MILK/MACHA": "0",
-        "HARGA PROMO| 80GR - EAT MILK/MACHA": "0",
-        "HARGA NORMAL| 240ML - CYD/BLUEBERRY": "9100",
-        "HARGA PROMO| 240ML - CYD/BLUEBERRY": "0",
-        "HARGA NORMAL| 240ML - CYD/MIX FRUIT": "9100",
-        "HARGA PROMO| 240ML - CYD/MIX FRUIT": "0",
-        "HARGA NORMAL| 240ML - CYD/MIXED BERRY": "9100",
-        "HARGA PROMO| 240ML - CYD/MIXED BERRY": "0",
-        "HARGA NORMAL| 240ML - CYD/PLAIN": "9100",
-        "HARGA PROMO| 240ML - CYD/PLAIN": "0",
-        "HARGA NORMAL| 240ML - CYD/STRAWBERRY": "9100",
-        "HARGA PROMO| 240ML - CYD/STRAWBERRY": "0",
-        "HARGA NORMAL| 240ML - CYD ZERO/BLUEBERRY": "8500",
-        "HARGA PROMO| 240ML - CYD ZERO/BLUEBERRY": "0",
-        "HARGA NORMAL| 240ML - CYD ZERO/STRAWBERRY": "8500",
-        "HARGA PROMO| 240ML - CYD ZERO/STRAWBERRY": "0",
-        "HARGA NORMAL| 240ML - CYD ZERO/STRAWBERRY MANGO": "8500",
-        "HARGA PROMO| 240ML - CYD ZERO/STRAWBERRY MANGO": "0",
-        "HARGA NORMAL| 240ML - CYD ZERO/TROPICAL FRUIT": "8500",
-        "HARGA PROMO| 240ML - CYD ZERO/TROPICAL FRUIT": "0",
-        "HARGA NORMAL| 65ML - B4/BLUEBERRY": "0",
-        "HARGA PROMO| 65ML - B4/BLUEBERRY": "0",
-        "HARGA NORMAL| 65ML - B4/STRAWBERRY": "0",
-        "HARGA PROMO| 65ML - B4/STRAWBERRY": "0",
-        "HARGA NORMAL| 40GR - STICKPACK/BLUEBERRY": "3500",
-        "HARGA PROMO| 40GR - STICKPACK/BLUEBERRY": "0",
-        "HARGA NORMAL| 40GR - STICKPACK/BROWN SUGAR": "3500",
-        "HARGA PROMO| 40GR - STICKPACK/BROWN SUGAR": "0",
-        "HARGA NORMAL| 40GR - STICKPACK/MANGO STICKY RICE": "3500",
-        "HARGA PROMO| 40GR - STICKPACK/MANGO STICKY RICE": "0",
-        "HARGA NORMAL| 40GR - STICKPACK/ORIGINAL": "3500",
-        "HARGA PROMO| 40GR - STICKPACK/ORIGINAL": "0",
-        "HARGA NORMAL| 40GR - STICKPACK/STRAWBERRY": "3500",
-        "HARGA PROMO| 40GR - STICKPACK/STRAWBERRY": "0",
-        "HARGA NORMAL| 40GR - STICKPACK/GRAPE": "3500",
-        "HARGA PROMO| 40GR - STICKPACK/GRAPE": "0",
-        "HARGA NORMAL| 40GR - STICKPACK/ORANGE": "3500",
-        "HARGA PROMO| 40GR - STICKPACK/ORANGE": "0",
-        "HARGA NORMAL| 120GR - SQ BITES/BLUEBERRY": "8500",
-        "HARGA PROMO| 120GR - SQ BITES/BLUEBERRY": "7900",
-        "HARGA NORMAL| 120GR - SQ BITES/BERRY BLEND": "8500",
-        "HARGA PROMO| 120GR - SQ BITES/BERRY BLEND": "7900",
-        "HARGA NORMAL| 120GR - SQ BITES/STRAWBERRY": "8500",
-        "HARGA PROMO| 120GR - SQ BITES/STRAWBERRY": "7900",
-        "HARGA NORMAL| 120GR - SQ BITES/STRAWBERRY LYCHEE": "8500",
-        "HARGA PROMO| 120GR - SQ BITES/STRAWBERRY LYCHEE": "7900",
-        "HARGA NORMAL| 120GR - SQ BITES/STRAWBERRY MANGO": "8500",
-        "HARGA PROMO| 120GR - SQ BITES/STRAWBERRY MANGO": "7900",
-        "HARGA NORMAL| 120GR - SQ BITES/YUZU": "0",
-        "HARGA PROMO| 120GR - SQ BITES/YUZU": "0",
-        "HARGA NORMAL| 120GR - SQ/BLUEBERRY": "10800",
-        "HARGA PROMO| 120GR - SQ/BLUEBERRY": "0",
-        "HARGA NORMAL| 120GR - SQ/BROWN SUGAR": "10800",
-        "HARGA PROMO| 120GR - SQ/BROWN SUGAR": "0",
-        "HARGA NORMAL| 120GR - SQ/MANGO STICKY RICE": "10800",
-        "HARGA PROMO| 120GR - SQ/MANGO STICKY RICE": "0",
-        "HARGA NORMAL| 120GR - SQ/ORIGINAL": "10800",
-        "HARGA PROMO| 120GR - SQ/ORIGINAL": "0",
-        "HARGA NORMAL| 120GR - SQ/STRAWBERRY": "10800",
-        "HARGA PROMO| 120GR - SQ/STRAWBERRY": "0",
-        "HARGA NORMAL| 225ML - MILK ZERO SUGAR/ALMOND": "0",
-        "HARGA PROMO| 225ML - MILK ZERO SUGAR/ALMOND": "0",
-        "HARGA NORMAL| 225ML - MILK ZERO/CHOCOLATE": "0",
-        "HARGA PROMO| 225ML - MILK ZERO/CHOCOLATE": "0",
-        "HARGA NORMAL| 225ML - MILK ZERO/MATCHA": "0",
-        "HARGA PROMO| 225ML - MILK ZERO/MATCHA": "0",
-        "HARGA NORMAL| 225ML - MILK ZERO/MARIE REGAL": "0",
-        "HARGA PROMO| 225ML - MILK ZERO/MARIE REGAL": "0",
-        "HARGA NORMAL| 250ML - MILK/ALMOND": "8000",
-        "HARGA PROMO| 250ML - MILK/ALMOND": "0",
-        "HARGA NORMAL| 250ML - MILK/CASHEW": "8000",
-        "HARGA PROMO| 250ML - MILK/CASHEW": "0",
-        "HARGA NORMAL| 250ML - MILK/CHOCO MALT": "8000",
-        "HARGA PROMO| 250ML - MILK/CHOCO MALT": "0",
-        "HARGA NORMAL| 250ML - MILK/CHOCOLATE": "8000",
-        "HARGA PROMO| 250ML - MILK/CHOCOLATE": "0",
-        "HARGA NORMAL| 250ML - MILK/HAZELNUT": "8000",
-        "HARGA PROMO| 250ML - MILK/HAZELNUT": "0",
-        "HARGA NORMAL| 250ML - MILK/MARIE REGAL": "8000",
-        "HARGA PROMO| 250ML - MILK/MARIE REGAL": "0",
-        "HARGA NORMAL| 250ML - MILK/MATCHA": "7800",
-        "HARGA PROMO| 250ML - MILK/MATCHA": "0",
-        "HARGA NORMAL| 250ML - MILK/STRAWBERRY": "0",
-        "HARGA PROMO| 250ML - MILK/STRAWBERRY": "0",
-        "HARGA NORMAL| 250ML - MILK/TIRAMISU": "7800",
-        "HARGA PROMO| 250ML - MILK/TIRAMISU": "0",
-        "HARGA NORMAL| 250ML - MILK/THAI TEA": "7500",
-        "HARGA PROMO| 250ML - MILK/THAI TEA": "0",
-        "HARGA NORMAL| 250ML - MILK/MILK TEA": "7500",
-        "HARGA PROMO| 250ML - MILK/MILK TEA": "0",
-        "HARGA NORMAL| 125ML - MILK/CHOCOLATE": "3600",
-        "HARGA PROMO| 125ML - MILK/CHOCOLATE": "0",
-        "HARGA NORMAL| 125ML - MILK/STRAWBERRY": "0",
-        "HARGA PROMO| 125ML - MILK/STRAWBERRY": "0",
-        "HARGA NORMAL| 750ML - MILK/ALMOND": "17500",
-        "HARGA PROMO| 750ML - MILK/ALMOND": "15300",
-        "HARGA NORMAL| 750ML - MILK/CHOCOLATE": "17500",
-        "HARGA PROMO| 750ML - MILK/CHOCOLATE": "15300",
-        "HARGA NORMAL| 60GR - SINGLES SOSIS/ORIGINAL": "9200",
-        "HARGA PROMO| 60GR - SINGLES SOSIS/ORIGINAL": "0",
-        "HARGA NORMAL| 60GR - SINGLES SOSIS/KEJU": "9200",
-        "HARGA PROMO| 60GR - SINGLES SOSIS/KEJU": "0",
-        "HARGA NORMAL| 60GR - SINGLES SOSIS/KEJU 2X": "9200",
-        "HARGA PROMO| 60GR - SINGLES SOSIS/KEJU 2X": "0",
-        "HARGA NORMAL| 60GR - SINGLES SOSIS/HOT": "9200",
-        "HARGA PROMO| 60GR - SINGLES SOSIS/HOT": "0",
-        "HARGA NORMAL| 60GR - SINGLES SOSIS/MINI": "9200",
-        "HARGA PROMO| 60GR - SINGLES SOSIS/MINI": "0",
-        "HARGA NORMAL| 60GR - SINGLES SOSIS/GOCHUJANG": "9200",
-        "HARGA PROMO| 60GR - SINGLES SOSIS/GOCHUJANG": "0",
-        "HARGA NORMAL| 60GR - SINGLES SOSIS/TOMYUM": "0",
-        "HARGA PROMO| 60GR - SINGLES SOSIS/TOMYUM": "0",
-        "HARGA NORMAL| 48GR - SINGLES BAKSO/ORIGINAL": "9200",
-        "HARGA PROMO| 48GR - SINGLES BAKSO/ORIGINAL": "8900",
-        "HARGA NORMAL| 48GR - SINGLES BAKSO/KEJU": "9200",
-        "HARGA PROMO| 48GR - SINGLES BAKSO/KEJU": "8900",
-        "HARGA NORMAL| 55GR - SINGLES BAKSO/HOT": "9200",
-        "HARGA PROMO| 55GR - SINGLES BAKSO/HOT": "8900",
-        "HARGA NORMAL| 55GR - SINGLES BAKSO/GOCHUJANG": "9200",
-        "HARGA PROMO| 55GR - SINGLES BAKSO/GOCHUJANG": "8900",
-        "HARGA NORMAL| 450GR - NUGGET/CHICKEN NUGGET": "59200",
-        "HARGA PROMO| 450GR - NUGGET/CHICKEN NUGGET": "0",
-        "HARGA NORMAL| 450GR - NUGGET/CRISPY NUGGET": "57900",
-        "HARGA PROMO| 450GR - NUGGET/CRISPY NUGGET": "0",
-        "HARGA NORMAL| 450GR - NUGGET/CRISPY STICK": "59200",
-        "HARGA PROMO| 450GR - NUGGET/CRISPY STICK": "0",
-        "HARGA NORMAL| 450GR - NUGGET/CRISPY SPICY": "61900",
-        "HARGA PROMO| 450GR - NUGGET/CRISPY SPICY": "0",
-        "HARGA NORMAL| 250GR - COCKTAIL/BEEF COCKTAIL": "39500",
-        "HARGA PROMO| 250GR - COCKTAIL/BEEF COCKTAIL": "0"
-
+{hargaData}
     };
-    // ============================================================
-    // 🔼 BATAS AREA PASTE 🔼
-    // ============================================================
 
-
-
-    // --- MESIN PENGGERAK V3 (NATIVE SETTER + BLUR) ---
     function isiData(inputElement, nilai) {
-        // 1. Fokus dulu
         inputElement.focus();
-
-        // 2. Tulis value pake Native Setter
         let nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
         nativeInputValueSetter.call(inputElement, nilai);
-
-        // 3. Tembakin event
         inputElement.dispatchEvent(new Event('input', { bubbles: true }));
         inputElement.dispatchEvent(new Event('change', { bubbles: true }));
-
-        // 4. LEPAS FOKUS (BLUR) - KRUSIAL!
         inputElement.blur(); 
     }
 
-    // --- LOGIC UTAMA PENCARI KOLOM ---
     function gasIsiForm() {
         let inputs = document.querySelectorAll('input[type="number"]');
         let terisi = 0;
-        
         inputs.forEach(input => {
             let label = input.getAttribute('aria-label');
             if (label && databaseHarga[label] !== undefined) {
@@ -269,13 +120,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (terisi > 0) {
-            tampilkanToast(`✅ SUKSES: ${terisi} Item Terisi & Dikunci!`);
+            tampilkanToast("✅ SUKSES: " + terisi + " Item Terisi & Dikunci!");
         } else {
             alert("❌ GAGAL: Gak ada item yg cocok.\nCek apakah GRUP PRODUK udah dipilih?");
         }
     }
 
-    // --- FITUR TOAST ---
     function tampilkanToast(pesan) {
         let toast = document.createElement("div");
         toast.innerText = pesan;
@@ -295,30 +145,17 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => toast.remove(), 3000);
     }
 
-    // --- PASANG TOMBOL SAKTI ---
     function pasangTombol() {
         if (document.getElementById("tombolMaster")) return;
-
         let btn = document.createElement("button");
         btn.id = "tombolMaster";
         btn.innerHTML = "🚀 HAJAR BOS";
-        
         Object.assign(btn.style, {
-            position: "fixed",
-            bottom: "80px",
-            left: "20px",
-            zIndex: "99999",
-            backgroundColor: "#dc3545",
-            color: "white",
-            padding: "15px 30px",
-            borderRadius: "50px",
-            fontWeight: "bold",
-            fontSize: "16px",
-            boxShadow: "0 5px 15px rgba(0,0,0,0.4)",
-            border: "2px solid white",
-            cursor: "pointer"
+            position: "fixed", bottom: "80px", left: "20px", zIndex: "99999",
+            backgroundColor: "#dc3545", color: "white", padding: "15px 30px",
+            borderRadius: "50px", fontWeight: "bold", fontSize: "16px",
+            boxShadow: "0 5px 15px rgba(0,0,0,0.4)", border: "2px solid white", cursor: "pointer"
         });
-
         btn.onclick = (e) => { 
             e.preventDefault(); 
             btn.innerHTML = "⏳ LAGI NGISI...";
@@ -329,54 +166,140 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.style.backgroundColor = "#dc3545";
             }, 100);
         };
-        
         document.body.appendChild(btn);
     }
     
     setTimeout(pasangTombol, 3000);
     setInterval(pasangTombol, 2000);
+})();`;
 
-})();
+    // --- FUNGSI BUAT NUMPAD ---
+    function openNumpad(input) {
+        // Cek input sebelumnya dulu sebelum pindah
+        if (activeInput && activeInput !== input) {
+            if (activeInput.value.trim() === '') {
+                activeInput.value = '0';
+                activeInput.dispatchEvent(new Event('input')); // Save
+            }
+            activeInput.classList.remove('active-input');
+        }
+
+        activeInput = input;
+        
+        // Tandain input yang aktif
+        input.classList.add('active-input');
+
+        // Scroll biar input keliatan (tapi ketutupan dikit gpp krn numpad di bawah)
+        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        numpad.classList.add('show');
+        
+        // Hapus '0' awal kalo mau ngetik baru
+        if (input.value === '0') {
+            input.value = '';
+        }
+    }
+
+    function closeNumpad() {
+        numpad.classList.remove('show');
+        if (activeInput) {
+            // Balikin ke 0 kalo kosong
+            if (activeInput.value.trim() === '') {
+                activeInput.value = '0';
+                activeInput.dispatchEvent(new Event('input')); // Trigger save localStorage
+            }
+            activeInput.classList.remove('active-input');
+            activeInput = null;
+        }
+    }
+
+    // Logic Tombol Numpad
+    numpadBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault(); // Biar ga nge-submit atau aneh2
+            if (!activeInput) return;
+
+            const val = btn.getAttribute('data-val');
+            const id = btn.id;
+
+            if (id === 'numpadDone') {
+                // Cari input selanjutnya
+                const allInputs = Array.from(document.querySelectorAll('input[type="number"]'));
+                const currentIndex = allInputs.indexOf(activeInput);
+                
+                if (currentIndex >= 0 && currentIndex < allInputs.length - 1) {
+                    // Masih ada input berikutnya -> Pindah
+                    const nextInput = allInputs[currentIndex + 1];
+                    openNumpad(nextInput);
+                } else {
+                    // Udah input terakhir -> Tutup
+                    closeNumpad();
+                }
+            } else if (id === 'numpadBackspace') {
+                activeInput.value = activeInput.value.slice(0, -1);
+            } else if (id === 'numpadClear') {
+                activeInput.value = '';
+            } else {
+                // Input Angka Biasa
+                activeInput.value += val;
+            }
+
+            // Trigger event biar kesimpen ke localStorage
+            activeInput.dispatchEvent(new Event('input'));
+        });
+    });
+
+    // Tutup numpad kalo klik di luar area numpad & input
+    document.addEventListener('click', (e) => {
+        if (!numpad.contains(e.target) && !e.target.matches('input[type="number"]')) {
+            closeNumpad();
+        }
+    });
 
 
     function populateTable() {
         productCatalog.forEach((productName, index) => {
             const row = document.createElement('tr');
-            
             const nameCell = document.createElement('td');
             nameCell.textContent = productName;
             
+            const savedNormal = localStorage.getItem(`harga_normal_${productName}`);
+            const savedPromo = localStorage.getItem(`harga_promo_${productName}`);
+            
+            // --- HARGA NORMAL ---
             const normalPriceCell = document.createElement('td');
             const normalPriceInput = document.createElement('input');
             normalPriceInput.type = 'number';
-            normalPriceInput.placeholder = 'Harga Normal';
+            normalPriceInput.inputMode = 'none'; // MATIIN KEYBOARD BAWAAN HP
             normalPriceInput.id = `normal-price-${index}`;
-                        normalPriceInput.value = '0'; // Default value 0
-                        normalPriceInput.addEventListener('focus', function() {
-                            // Use setTimeout to ensure select() happens after the click event has fully processed
-                            setTimeout(() => this.select(), 0);
-                        });
-                        // Prevent deselection on mouseup after initial selection
-                        normalPriceInput.addEventListener('mouseup', function(e) {
-                            e.preventDefault();
-                        });
-                        normalPriceCell.appendChild(normalPriceInput);
+            normalPriceInput.value = savedNormal !== null ? savedNormal : '0';
             
-                        const promoPriceCell = document.createElement('td');
-                        const promoPriceInput = document.createElement('input');
-                        promoPriceInput.type = 'number';
-                        promoPriceInput.placeholder = 'Harga Promo (Opsional)';
-                        promoPriceInput.id = `promo-price-${index}`;
-                        promoPriceInput.value = '0'; // Default value 0
-                        promoPriceInput.addEventListener('focus', function() {
-                            // Use setTimeout to ensure select() happens after the click event has fully processed
-                            setTimeout(() => this.select(), 0);
-                        });
-                        // Prevent deselection on mouseup after initial selection
-                        promoPriceInput.addEventListener('mouseup', function(e) {
-                            e.preventDefault();
-                        });
-                        promoPriceCell.appendChild(promoPriceInput);
+            normalPriceInput.addEventListener('click', function() {
+                openNumpad(this);
+            });
+            
+            normalPriceInput.addEventListener('input', (e) => {
+                localStorage.setItem(`harga_normal_${productName}`, e.target.value);
+            });
+            normalPriceCell.appendChild(normalPriceInput);
+            
+            // --- HARGA PROMO ---
+            const promoPriceCell = document.createElement('td');
+            const promoPriceInput = document.createElement('input');
+            promoPriceInput.type = 'number';
+            promoPriceInput.inputMode = 'none'; // MATIIN KEYBOARD BAWAAN HP
+            promoPriceInput.id = `promo-price-${index}`;
+            promoPriceInput.value = savedPromo !== null ? savedPromo : '0';
+
+            promoPriceInput.addEventListener('click', function() {
+                openNumpad(this);
+            });
+
+            promoPriceInput.addEventListener('input', (e) => {
+                localStorage.setItem(`harga_promo_${productName}`, e.target.value);
+            });
+            promoPriceCell.appendChild(promoPriceInput);
+
             row.appendChild(nameCell);
             row.appendChild(normalPriceCell);
             row.appendChild(promoPriceCell);
@@ -387,52 +310,40 @@ document.addEventListener('DOMContentLoaded', () => {
     generateAndCopyButton.addEventListener('click', () => {
         let data = {};
         let allNormalPricesFilled = true;
-
         productCatalog.forEach((productName, index) => {
-            const normalPriceInput = document.getElementById(`normal-price-${index}`);
-            const promoPriceInput = document.getElementById(`promo-price-${index}`);
-            
-            const normalPrice = normalPriceInput.value;
-            
-            if (!normalPrice && normalPrice !== '0') {
-                allNormalPricesFilled = false;
-            }
-            
-            const promoPrice = promoPriceInput.value || normalPrice;
-
+            const normalPrice = document.getElementById(`normal-price-${index}`).value;
+            const promoPrice = document.getElementById(`promo-price-${index}`).value || normalPrice;
+            if (!normalPrice && normalPrice !== '0') allNormalPricesFilled = false;
             if (normalPrice) {
-                const normalKey = `HARGA NORMAL| ${productName}`;
-                const promoKey = `HARGA PROMO| ${productName}`;
-                data[normalKey] = normalPrice;
-                data[promoKey] = promoPrice;
+                data[`HARGA NORMAL| ${productName}`] = normalPrice;
+                data[`HARGA PROMO| ${productName}`] = promoPrice;
             }
         });
 
         if (!allNormalPricesFilled) {
-            alert('Harap isi semua Harga Normal untuk setiap produk!');
+            alert('Harap isi semua Harga Normal!');
             return;
         }
 
         let hargaDataString = '';
         const keys = Object.keys(data);
         keys.forEach((key, index) => {
-            hargaDataString += `        "${key}": "${data[key]}"`;
-            if (index < keys.length - 1) {
-                hargaDataString += ',\n';
-            } else {
-                hargaDataString += '\n';
-            }
+            hargaDataString += `        "${key}": "${data[key]}"` + (index < keys.length - 1 ? ",\n" : "\n");
         });
 
-        const finalScript = tampermonkeyTemplate.replace('{hargaData}', hargaDataString);
-        
-        outputTextarea.value = finalScript;
-        outputTextarea.style.display = 'block'; // Show the textarea
-
-        // Copy to clipboard
+        outputTextarea.value = tampermonkeyTemplate.replace('{hargaData}', hargaDataString);
+        outputTextarea.style.display = 'block';
         outputTextarea.select();
         document.execCommand('copy');
-        alert('Script berhasil dicopy ke clipboard!');
+        alert('Script berhasil dicopy!');
+    });
+
+    resetDataButton.addEventListener('click', () => {
+        if (confirm('Reset semua data?')) {
+            localStorage.clear();
+            document.querySelectorAll('input[type="number"]').forEach(input => input.value = '0');
+            alert('Data direset!');
+        }
     });
 
     populateTable();
