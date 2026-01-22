@@ -8,8 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const helpModal = document.getElementById('helpModal');
     const closeModal = document.querySelector('.close-modal');
 
-    helpButton.onclick = () => helpModal.style.display = "block";
-    closeModal.onclick = () => helpModal.style.display = "none";
+    if (helpButton) helpButton.onclick = () => helpModal.style.display = "block";
+    if (closeModal) closeModal.onclick = () => helpModal.style.display = "none";
     window.onclick = (event) => {
         if (event.target == helpModal) {
             helpModal.style.display = "none";
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // @name         Patrick_Star_Auto_Fill
 // @namespace    http://tampermonkey.net/
 // @version      ${version}
-// @description  Auto-fill harga + GPS Spoofing (Update: ${dateString})
+// @description  Auto-fill harga + GPS & Time Spoofing (Update: ${dateString})
 // @author       YPRTM
 // @match        https://www.appsheet.com/*
 // @grant        none
@@ -120,6 +120,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     function bajakLokasi() {
+        // Simpan fungsi asli
+        const originalGetCurrentPosition = navigator.geolocation.getCurrentPosition.bind(navigator.geolocation);
+        window.originalGetCurrentPosition = originalGetCurrentPosition;
+
         const getFakePosition = () => {
             return {
                 coords: {
@@ -137,8 +141,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Bajak getCurrentPosition
         navigator.geolocation.getCurrentPosition = function(success, error, options) {
-            console.log(\`📍 GPS DIBAJAK ke: \${window.PATRICK_GPS.lat}, \${window.PATRICK_GPS.lon}\`);
-            success(getFakePosition());
+            // Flag rahasia buat nembus fake gps
+            if (options && options.MINTA_REAL) {
+                console.log("📍 Minta Lokasi ASLI...");
+                originalGetCurrentPosition(success, error, options);
+            } else {
+                console.log('📍 GPS DIBAJAK ke: ' + window.PATRICK_GPS.lat + ', ' + window.PATRICK_GPS.lon);
+                success(getFakePosition());
+            }
         };
 
         // Bajak watchPosition
@@ -152,7 +162,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Jalanin pembajakan SEGERA (sebelum AppSheet loading)
     bajakLokasi();
 
-    // --- ⏳ SISTEM MESIN WAKTU (Time Spoofing V2) ---
+
+    // --- ⏳ SISTEM MESIN WAKTU (Time Spoofing V2 - Inverted Logic) ---
+    // +15 = Maju (Cepat), -15 = Mundur (Lambat)
     let savedTimeOffset = parseInt(localStorage.getItem('PATRICK_TIME_OFFSET')) || 0;
     window.PATRICK_TIME_OFFSET = savedTimeOffset;
 
@@ -184,7 +196,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         window.Intl.DateTimeFormat = MockDTF;
-        console.log(\`⏳ Time Machine Aktif: Geser \${window.PATRICK_TIME_OFFSET} Menit!\`);
+
+        console.log('⏳ Time Machine Aktif: Geser ' + window.PATRICK_TIME_OFFSET + ' Menit!');
     }
 
 
@@ -193,26 +206,19 @@ ${hargaData}
     };
 
     function isiData(inputElement, nilai) {
-        // 1. Fokus dulu
         inputElement.focus();
-
-        // 2. Hack: Set Value pake Native Prototype
-        // Ini wajib buat nembus state management framework (React/Angular/dll)
+        // Hack Native Setter
         let nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
         nativeInputValueSetter.call(inputElement, nilai);
-
-        // 3. Hack: Reset Value Tracker (Kalo ada)
-        // Biar framework sadar kalo ada perubahan nilai
+        
+        // Hack Value Tracker
         let tracker = inputElement._valueTracker;
         if (tracker) {
             tracker.setValue("dummy_old_value");
         }
 
-        // 4. Tembakin Event Wajib (Input & Change)
         inputElement.dispatchEvent(new Event('input', { bubbles: true }));
         inputElement.dispatchEvent(new Event('change', { bubbles: true }));
-
-        // 5. Lepas Fokus (Biasanya trigger save di sini)
         inputElement.blur(); 
     }
 
@@ -232,7 +238,7 @@ ${hargaData}
         if (terisi > 0) {
             tampilkanToast("✅ SUKSES: " + terisi + " Item Terisi & Dikunci!");
         } else {
-            alert("❌ GAGAL: Gak ada item yg cocok.\\nCek apakah GRUP PRODUK udah dipilih?");
+            alert("❌ GAGAL: Gak ada item yg cocok. Cek apakah GRUP PRODUK udah dipilih?");
         }
     }
 
@@ -260,6 +266,7 @@ ${hargaData}
     function pasangTombol() {
         if (document.getElementById("tombolMaster")) return;
 
+        // Container Utama (Biar rapi numpuk ke atas)
         let container = document.createElement("div");
         container.id = "tombolMaster";
         Object.assign(container.style, {
@@ -275,10 +282,19 @@ ${hargaData}
             maxWidth: "400px"
         });
 
-        // --- PANEL GPS ---
+        // --- CONTAINER SETTING (Hidden) ---
+        let settingsContainer = document.createElement("div");
+        Object.assign(settingsContainer.style, {
+            display: "none",
+            flexDirection: "column",
+            gap: "5px",
+            marginBottom: "5px"
+        });
+
+        // 1. PANEL GPS
         let gpsPanel = document.createElement("div");
         Object.assign(gpsPanel.style, {
-            backgroundColor: "rgba(0,0,0,0.85)",
+            backgroundColor: "rgba(0,0,0,0.9)",
             padding: "10px",
             borderRadius: "12px",
             display: "flex",
@@ -288,27 +304,20 @@ ${hargaData}
         });
 
         let inputCoords = document.createElement("input");
-        inputCoords.placeholder = "Paste: Lat, Lon";
+        inputCoords.placeholder = "Lat, Lon";
         inputCoords.type = "text";
         inputCoords.readOnly = true; 
-        inputCoords.value = \`\${window.PATRICK_GPS.lat}, \${window.PATRICK_GPS.lon}\`;
+        inputCoords.value = window.PATRICK_GPS.lat + ', ' + window.PATRICK_GPS.lon;
         Object.assign(inputCoords.style, { 
-            flex: "1", 
-            padding: "10px", 
-            borderRadius: "8px", 
-            border: "1px solid #555", 
-            fontSize: "12px",
-            backgroundColor: "#333",
-            color: "#fff",
-            pointerEvents: "none"
+            flex: "1", padding: "10px", borderRadius: "8px", border: "1px solid #555", 
+            fontSize: "12px", backgroundColor: "#333", color: "#fff", pointerEvents: "none"
         });
 
         let btnPaste = document.createElement("button");
         btnPaste.innerHTML = "📋";
         Object.assign(btnPaste.style, {
             backgroundColor: "#6c757d", color: "white", border: "none",
-            borderRadius: "8px", padding: "10px", cursor: "pointer", 
-            fontWeight: "bold", fontSize: "14px", minWidth: "40px"
+            borderRadius: "8px", padding: "10px", cursor: "pointer", fontWeight: "bold"
         });
         btnPaste.onclick = async (e) => {
             e.preventDefault(); e.stopPropagation();
@@ -321,46 +330,67 @@ ${hargaData}
             } catch (err) { alert("Cek izin clipboard!"); }
         };
 
+        // TOMBOL REAL GPS
+        let btnReal = document.createElement("button");
+        btnReal.innerHTML = "📍";
+        Object.assign(btnReal.style, {
+            backgroundColor: "#17a2b8", color: "white", border: "none",
+            borderRadius: "8px", padding: "10px", cursor: "pointer", fontWeight: "bold"
+        });
+        btnReal.onclick = (e) => {
+            e.preventDefault(); e.stopPropagation();
+            tampilkanToast("⏳ Mencari lokasi asli...");
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    let lat = pos.coords.latitude;
+                    let lon = pos.coords.longitude;
+                    inputCoords.value = lat + ', ' + lon;
+                    tampilkanToast('📍 Dapet Lokasi Asli: ' + lat.toFixed(4) + ', ' + lon.toFixed(4));
+                },
+                (err) => { tampilkanToast("❌ Gagal: " + err.message); },
+                { MINTA_REAL: true, enableHighAccuracy: true }
+            );
+        };
+
         let btnSetGps = document.createElement("button");
         btnSetGps.innerHTML = "SET";
         Object.assign(btnSetGps.style, {
             backgroundColor: "#007BFF", color: "white", border: "none",
-            borderRadius: "8px", padding: "10px 15px", cursor: "pointer", 
-            fontWeight: "bold", fontSize: "14px"
+            borderRadius: "8px", padding: "10px 15px", cursor: "pointer", fontWeight: "bold"
         });
         btnSetGps.onclick = (e) => {
             e.preventDefault(); e.stopPropagation();
             let raw = inputCoords.value;
+            // Regex nyari angka desimal/negatif
             let matches = raw.match(/[-+]?[0-9]*\\.?[0-9]+/g);
             if (matches && matches.length >= 2) {
                 let lat = parseFloat(matches[0]);
                 let lon = parseFloat(matches[1]);
-                if (!isNaN(lat) && !isNaN(lon)) {
-                    window.PATRICK_GPS.lat = lat;
-                    window.PATRICK_GPS.lon = lon;
-                    localStorage.setItem('PATRICK_LAT', lat);
-                    localStorage.setItem('PATRICK_LON', lon);
-                    tampilkanToast(\`📍 Lokasi OK! KLIK TOMBOL GPS DI FORM BIAR UPDATE KE: \${lat}, \${lon}\`);
-                    // Update tampilan
-                    btnSetGps.innerHTML = "OK!";
-                    btnSetGps.style.backgroundColor = "#28a745";
-                    setTimeout(() => {
-                        btnSetGps.innerHTML = "SET";
-                        btnSetGps.style.backgroundColor = "#007BFF";
-                        inputCoords.value = \`\${lat}, \${lon}\`;
-                    }, 1500);
-                } else { alert("Koordinat ga valid!"); }
-            } else { alert("Format salah! Paste: Lat, Lon"); }
+                window.PATRICK_GPS.lat = lat;
+                window.PATRICK_GPS.lon = lon;
+                localStorage.setItem('PATRICK_LAT', lat);
+                localStorage.setItem('PATRICK_LON', lon);
+                tampilkanToast('📍 Lokasi OK! KLIK TOMBOL GPS DI FORM!');
+                // Update tampilan
+                btnSetGps.innerHTML = "OK!";
+                btnSetGps.style.backgroundColor = "#28a745";
+                setTimeout(() => {
+                    btnSetGps.innerHTML = "SET";
+                    btnSetGps.style.backgroundColor = "#007BFF";
+                    inputCoords.value = lat + ', ' + lon;
+                }, 1500);
+            } else { alert("Format salah!"); }
         };
 
         gpsPanel.appendChild(inputCoords);
         gpsPanel.appendChild(btnPaste);
+        gpsPanel.appendChild(btnReal);
         gpsPanel.appendChild(btnSetGps);
 
-        // --- PANEL WAKTU (Baru) ---
+        // 2. PANEL WAKTU
         let timePanel = document.createElement("div");
         Object.assign(timePanel.style, {
-            backgroundColor: "rgba(0,0,0,0.85)",
+            backgroundColor: "rgba(0,0,0,0.9)",
             padding: "10px",
             borderRadius: "12px",
             display: "flex",
@@ -372,14 +402,21 @@ ${hargaData}
         let inputTime = document.createElement("input");
         inputTime.placeholder = "Geser: +Maju, -Mundur";
         inputTime.type = "number";
-        let currentOffset = parseInt(localStorage.getItem('PATRICK_TIME_OFFSET')) || 0;
-        inputTime.value = currentOffset;
-        
-        // ... (styling dan listener tetep sama) ...
+        inputTime.value = parseInt(localStorage.getItem('PATRICK_TIME_OFFSET')) || 0;
+        Object.assign(inputTime.style, { 
+            flex: "1", padding: "10px", borderRadius: "8px", border: "1px solid #555", 
+            fontSize: "14px", backgroundColor: "#fff", color: "#333", pointerEvents: "auto"
+        });
+        ['click', 'mousedown', 'touchstart', 'keydown'].forEach(evt => {
+            inputTime.addEventListener(evt, (e) => e.stopPropagation());
+        });
 
         let btnSetTime = document.createElement("button");
         btnSetTime.innerHTML = "SET TIME";
-        // ... (styling) ...
+        Object.assign(btnSetTime.style, {
+            backgroundColor: "#fd7e14", color: "white", border: "none",
+            borderRadius: "8px", padding: "10px 15px", cursor: "pointer", fontWeight: "bold", minWidth: "80px"
+        });
         btnSetTime.onclick = (e) => {
             e.preventDefault(); e.stopPropagation();
             let offset = parseInt(inputTime.value);
@@ -387,48 +424,77 @@ ${hargaData}
                 window.PATRICK_TIME_OFFSET = offset;
                 localStorage.setItem('PATRICK_TIME_OFFSET', offset);
                 let ket = offset > 0 ? "dimajukan" : "dimundurkan";
-                tampilkanToast(\`⏳ Waktu \${ket} \${Math.abs(offset)} menit. REFRESH APP!\`);
+                tampilkanToast('⏳ Waktu ' + ket + ' ' + Math.abs(offset) + ' menit. REFRESH APP!');
             }
         };
 
         timePanel.appendChild(inputTime);
         timePanel.appendChild(btnSetTime);
 
+        settingsContainer.appendChild(gpsPanel);
+        settingsContainer.appendChild(timePanel);
 
-        // --- TOMBOL HAJAR ---
-        let btnHajar = document.createElement("button");
-        btnHajar.innerHTML = "🚀 HAJAR BOS";
-        Object.assign(btnHajar.style, {
-            backgroundColor: "#dc3545", color: "white", padding: "15px 0",
-            borderRadius: "50px", fontWeight: "bold", fontSize: "16px",
+
+        // --- TOMBOL KONTROL (Toggle + Hajar) ---
+        let controlsContainer = document.createElement("div");
+        Object.assign(controlsContainer.style, {
+            display: "flex",
+            gap: "10px"
+        });
+
+        let btnToggle = document.createElement("button");
+        btnToggle.innerHTML = "⚙️";
+        Object.assign(btnToggle.style, {
+            backgroundColor: "#343a40", color: "white", 
+            width: "50px", height: "50px",
+            borderRadius: "50%", 
+            fontWeight: "bold", fontSize: "24px",
             boxShadow: "0 5px 15px rgba(0,0,0,0.4)", border: "2px solid white", cursor: "pointer",
-            width: "100%"
+            display: "flex", justifyContent: "center", alignItems: "center", padding: "0"
+        });
+        btnToggle.onclick = (e) => {
+            e.preventDefault();
+            if (settingsContainer.style.display === "none") {
+                settingsContainer.style.display = "flex";
+            } else {
+                settingsContainer.style.display = "none";
+            }
+        };
+
+        let btnHajar = document.createElement("button");
+        btnHajar.innerHTML = "🚀";
+        Object.assign(btnHajar.style, {
+            backgroundColor: "#dc3545", color: "white", 
+            width: "50px", height: "50px",
+            borderRadius: "50%", 
+            fontWeight: "bold", fontSize: "24px",
+            boxShadow: "0 5px 15px rgba(0,0,0,0.4)", border: "2px solid white", cursor: "pointer",
+            display: "flex", justifyContent: "center", alignItems: "center", padding: "0"
         });
         btnHajar.onclick = (e) => { 
             e.preventDefault(); 
-            btnHajar.innerHTML = "⏳ LAGI NGISI...";
+            btnHajar.innerHTML = "⏳";
             btnHajar.style.backgroundColor = "#e67e22";
             setTimeout(() => {
                 gasIsiForm();
-                btnHajar.innerHTML = "🚀 HAJAR BOS";
+                btnHajar.innerHTML = "🚀";
                 btnHajar.style.backgroundColor = "#dc3545";
             }, 100);
         };
 
-        container.appendChild(gpsPanel);
-        container.appendChild(timePanel);
-        container.appendChild(btnHajar);
+        controlsContainer.appendChild(btnToggle);
+        controlsContainer.appendChild(btnHajar);
+
+        container.appendChild(settingsContainer);
+        container.appendChild(controlsContainer);
         
         document.body.appendChild(container);
-        console.log("Panel Patrick Star (GPS + Time) dipasang!");
+        console.log("Panel Patrick Star (Compact UI) dipasang!");
     }
     
-    // Cek terus tiap 1 detik. Kalo tombol ilang (misal ganti halaman), pasang lagi.
     setInterval(pasangTombol, 1000);
-    
-    // Jalanin sekali pas awal
     pasangTombol();
-})();`;
+})();`
     }
 
     // --- FUNGSI BUAT NUMPAD ---
@@ -563,12 +629,10 @@ ${hargaData}
             cleanData[key] = data[key];
         });
 
-        // Convert ke JSON String yang Rapi (Indentation 4 spasi)
-        // Slice buat buang kurung kurawal pembuka/penutup '{' dan '}' biar pas masuk template
+        // Convert ke JSON String yang Rapi
         let jsonString = JSON.stringify(cleanData, null, 4);
         let hargaDataString = jsonString.substring(1, jsonString.length - 1);
 
-        // 1. Generate Versi Dinamis (YYYY.MM.DD.HHmm)
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -579,21 +643,17 @@ ${hargaData}
         const versionString = `${year}.${month}.${day}.${hour}${minute}`;
         const dateString = `${day}/${month}/${year} ${hour}:${minute}`;
 
-        // 2. Isi Template
         const finalScript = getTampermonkeyTemplate(versionString, dateString, hargaDataString);
 
-        // 3. Bikin Blob (File Virtual)
         const blob = new Blob([finalScript], { type: 'text/javascript' });
         const url = URL.createObjectURL(blob);
 
-        // 4. Download / Install
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'patrick_star_auto_fill.user.js'; // Ekstensi .user.js wajib biar kedetect Tampermonkey
+        a.download = 'patrick_star_auto_fill.user.js'; 
         document.body.appendChild(a);
         a.click();
         
-        // Bersihin
         setTimeout(() => {
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
