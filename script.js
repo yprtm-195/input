@@ -316,11 +316,12 @@ ${hargaData}
             return;
         }
 
-        let hargaDataString = '';
+        let hargaLines = [];
         const keys = Object.keys(data);
-        keys.forEach((key, index) => {
-            hargaDataString += `        "${key}": "${data[key]}"` + (index < keys.length - 1 ? "\n" : "\n");
+        keys.forEach((key) => {
+            hargaLines.push(`        "${key}": "${data[key]}"`);
         });
+        let hargaDataString = hargaLines.join(',\n');
 
         // 1. Generate Versi Dinamis (YYYY.MM.DD.HHmm)
         const now = new Date();
