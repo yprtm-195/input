@@ -316,12 +316,17 @@ ${hargaData}
             return;
         }
 
-        let hargaLines = [];
+        // Generate Object Bersih
+        let cleanData = {};
         const keys = Object.keys(data);
         keys.forEach((key) => {
-            hargaLines.push(`        "${key}": "${data[key]}"`);
+            cleanData[key] = data[key];
         });
-        let hargaDataString = hargaLines.join(',\n');
+
+        // Convert ke JSON String yang Rapi (Indentation 4 spasi)
+        // Slice buat buang kurung kurawal pembuka/penutup '{' dan '}' biar pas masuk template
+        let jsonString = JSON.stringify(cleanData, null, 4);
+        let hargaDataString = jsonString.substring(1, jsonString.length - 1);
 
         // 1. Generate Versi Dinamis (YYYY.MM.DD.HHmm)
         const now = new Date();
