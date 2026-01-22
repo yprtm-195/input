@@ -24,15 +24,52 @@
                     </table>
                 </div>
         
-                <div class="button-group">
-                    <button id="downloadScript">UPDATE SCRIPT KE APP</button>
-                    <button id="resetData">Reset Data</button>
-                </div>
+                        <div class="button-group">
+                            <button id="downloadScript">UPDATE SCRIPT KE APP</button>
+                            <button id="resetData">Reset Data</button>
+                            <button id="helpButton" style="background-color: #17a2b8;">CARA PAKAI</button>
+                        </div>
+                    </div>
                 
-                <!-- Textarea dihapus karena udah pake sistem install langsung -->
-            </div>
-            <div id="customNumpad" class="numpad-container">
-        <div class="numpad-row">
+                    <!-- MODAL BANTUAN -->
+                    <div id="helpModal" class="modal">
+                        <div class="modal-content">
+                            <span class="close-modal">&times;</span>
+                            <h2>📖 PANDUAN PATRICK STAR</h2>
+                            <div class="guide-section">
+                                <h3>📍 CARA ABSEN (GPS)</h3>
+                                <ol>
+                                    <li>Buka AppSheet.</li>
+                                    <li>Di Panel Hitam, paste koordinat toko (Lat Lon).</li>
+                                    <li>Klik tombol <b>SET</b> (Tunggu sampe ijo).</li>
+                                    <li>Di form Absen, klik <b>Ikon GPS/Pin</b> biar lokasi ke-refresh.</li>
+                                </ol>
+                            </div>
+                            <div class="guide-section">
+                                <h3>💰 CARA ISI HARGA</h3>
+                                <ol>
+                                    <li>Pastikan form harga udah kebuka.</li>
+                                    <li>Klik tombol merah <b>🚀 HAJAR BOS</b>.</li>
+                                    <li>Tunggu sampe semua kolom keisi otomatis.</li>
+                                </ol>
+                            </div>
+                            <div class="guide-section">
+                                <h3>⏳ CARA GANTI JAM</h3>
+                                <ol>
+                                    <li>Isi angka di kotak "Geser Menit".</li>
+                                    <li><b>-15</b> = Mundur 15 menit (Telat Absen).</li>
+                                    <li><b>+15</b> = Maju 15 menit (Pulang Awal).</li>
+                                    <li>Klik <b>SET TIME</b>.</li>
+                                    <li><b>WAJIB REFRESH APP SHEET</b> biar jam berubah!</li>
+                                </ol>
+                            </div>
+                            <div class="guide-footer">
+                                <p><i>"Gunakan dengan bijak, jangan sampe ketahuan bos!"</i> 🤫</p>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div id="customNumpad" class="numpad-container">        <div class="numpad-row">
             <button class="numpad-btn" data-val="1">1</button>
             <button class="numpad-btn" data-val="2">2</button>
             <button class="numpad-btn" data-val="3">3</button>
