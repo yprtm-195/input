@@ -163,15 +163,25 @@ ${hargaData}
     }
 
     function pasangTombol() {
-        if (document.getElementById("tombolMaster")) return;
+        if (document.getElementById("tombolMaster")) return; // Tombol udah ada? Skip.
+        
         let btn = document.createElement("button");
         btn.id = "tombolMaster";
         btn.innerHTML = "🚀 HAJAR BOS";
         Object.assign(btn.style, {
-            position: "fixed", bottom: "80px", left: "20px", zIndex: "99999",
-            backgroundColor: "#dc3545", color: "white", padding: "15px 30px",
-            borderRadius: "50px", fontWeight: "bold", fontSize: "16px",
-            boxShadow: "0 5px 15px rgba(0,0,0,0.4)", border: "2px solid white", cursor: "pointer"
+            position: "fixed", 
+            bottom: "80px", 
+            left: "20px", 
+            zIndex: "2147483647", // Max Z-Index biar paling atas
+            backgroundColor: "#dc3545", 
+            color: "white", 
+            padding: "15px 30px",
+            borderRadius: "50px", 
+            fontWeight: "bold", 
+            fontSize: "16px",
+            boxShadow: "0 5px 15px rgba(0,0,0,0.4)", 
+            border: "2px solid white", 
+            cursor: "pointer"
         });
         btn.onclick = (e) => { 
             e.preventDefault(); 
@@ -184,10 +194,14 @@ ${hargaData}
             }, 100);
         };
         document.body.appendChild(btn);
+        console.log("Tombol Patrick Star dipasang!");
     }
     
-    setTimeout(pasangTombol, 3000);
-    setInterval(pasangTombol, 2000);
+    // Cek terus tiap 1 detik. Kalo tombol ilang (misal ganti halaman), pasang lagi.
+    setInterval(pasangTombol, 1000);
+    
+    // Jalanin sekali pas awal
+    pasangTombol();
 })();`;
     }
 
