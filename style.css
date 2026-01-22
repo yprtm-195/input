@@ -8,7 +8,7 @@ body {
     min-height: 100vh;
     margin: 0;
     padding: 20px 0;
-    padding-bottom: 300px; /* Kasih ruang bawah biar numpad ga nutupin konten */
+    padding-bottom: 300px;
 }
 
 .container {
@@ -28,9 +28,8 @@ h1 {
     margin-bottom: 1.5rem;
 }
 
-/* TABLE WRAPPER */
 #tableWrapper {
-    max-height: 50vh; /* Kurangin dikit tinggi tabel biar pas sama numpad */
+    max-height: 50vh;
     overflow-y: auto;
     border: 1px solid #eee;
     border-radius: 8px;
@@ -68,10 +67,9 @@ input[type="number"] {
     box-sizing: border-box;
     font-size: 16px;
     transition: border-color 0.2s;
-    background-color: #fff; /* Pastiin background putih */
+    background-color: #fff;
 }
 
-/* Highlight input yang lagi aktif */
 input[type="number"].active-input {
     border-color: #007BFF;
     background-color: #e8f0fe;
@@ -101,21 +99,12 @@ button:active {
 }
 
 #downloadScript {
-
     background-color: #28a745 !important;
-
     color: #fff !important;
-
     border: none !important;
-
 }
-
-
-
 #downloadScript:hover {
-
     background-color: #218838 !important;
-
 }
 
 #resetData {
@@ -125,17 +114,85 @@ button:active {
     background-color: #c82333;
 }
 
-textarea {
-    width: 100%;
-    padding: 0.8rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    resize: vertical;
-    box-sizing: border-box;
-    font-family: monospace;
-    margin-top: 1rem;
+#helpButton:hover {
+    background-color: #138496;
+}
+
+/* =========================================
+   MODAL STYLE (CARA PAKAI)
+   ========================================= */
+.modal {
     display: none; 
-    background-color: #f8f9fa;
+    position: fixed; 
+    z-index: 99999; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.6); 
+    backdrop-filter: blur(3px);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto; 
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    position: relative;
+    animation: slideDown 0.3s;
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.close-modal {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    right: 15px;
+    top: 10px;
+}
+
+.close-modal:hover,
+.close-modal:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.guide-section {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.guide-section h3 {
+    margin-top: 0;
+    color: #007BFF;
+    font-size: 1.1rem;
+}
+
+.guide-section ol {
+    padding-left: 20px;
+    margin: 5px 0;
+    line-height: 1.6;
+}
+
+.guide-footer {
+    text-align: center;
+    color: #666;
+    margin-top: 20px;
+    font-size: 0.9rem;
 }
 
 /* =========================================
@@ -143,7 +200,7 @@ textarea {
    ========================================= */
 .numpad-container {
     position: fixed;
-    bottom: -100%; /* Sembunyi dulu di bawah */
+    bottom: -100%;
     left: 0;
     width: 100%;
     background-color: #eee;
@@ -200,14 +257,10 @@ textarea {
     background-color: #0056b3;
 }
 
-
-/* =========================================
-   RESPONSIVE MOBILE STYLE (CARD LAYOUT)
-   ========================================= */
 @media screen and (max-width: 768px) {
     body {
         padding: 10px 0;
-        padding-bottom: 350px; /* Space buat numpad di HP */
+        padding-bottom: 350px;
         align-items: flex-start;
     }
 
@@ -219,7 +272,7 @@ textarea {
     }
 
     #tableWrapper {
-        max-height: 40vh; /* Lebih pendek lagi di HP biar muat numpad */
+        max-height: 40vh;
         border: none;
         padding: 0;
     }
