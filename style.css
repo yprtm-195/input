@@ -114,8 +114,15 @@ button:active {
     background-color: #c82333;
 }
 
-#helpButton:hover {
+#importScript {
+    background-color: #17a2b8;
+}
+#importScript:hover {
     background-color: #138496;
+}
+
+#helpButton:hover {
+    background-color: #5a6268;
 }
 
 /* =========================================
