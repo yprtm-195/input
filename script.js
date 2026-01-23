@@ -271,15 +271,16 @@ ${hargaData}
         container.id = "tombolMaster";
         Object.assign(container.style, {
             position: "fixed", 
-            bottom: "80px", 
-            left: "20px", 
-            right: "20px", 
+            top: "50%", // Posisi Tengah Vertikal
+            transform: "translateY(-50%)",
+            left: "10px", 
+            width: "auto", 
             zIndex: "2147483647",
             display: "flex",
             flexDirection: "column",
             gap: "8px",
             fontFamily: "sans-serif",
-            maxWidth: "400px"
+            maxWidth: "90vw"
         });
 
         // --- CONTAINER SETTING (Hidden) ---
@@ -424,7 +425,11 @@ ${hargaData}
                 window.PATRICK_TIME_OFFSET = offset;
                 localStorage.setItem('PATRICK_TIME_OFFSET', offset);
                 let ket = offset > 0 ? "dimajukan" : "dimundurkan";
-                tampilkanToast('⏳ Waktu ' + ket + ' ' + Math.abs(offset) + ' menit. REFRESH APP!');
+                tampilkanToast('⏳ Waktu ' + ket + ' ' + Math.abs(offset) + ' menit. MEREFRESH HALAMAN...');
+                // Refresh otomatis setelah 1 detik biar user sempet baca notif
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
             }
         };
 
@@ -600,6 +605,82 @@ ${hargaData}
             row.appendChild(normalPriceCell);
             row.appendChild(promoPriceCell);
             tableBody.appendChild(row);
+        });
+    }
+
+    // --- LOGIKA IMPORT DATA LAMA ---
+    const importScriptButton = document.getElementById('importScript');
+    const fileInput = document.getElementById('fileInput');
+
+    if (importScriptButton && fileInput) {
+        // 1. Klik tombol -> Buka File Picker
+        importScriptButton.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // 2. Pas file dipilih -> Baca & Parse
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const content = event.target.result;
+                
+                // Cari blok databaseHarga pake Regex
+                // Cocokkan: const databaseHarga = { ... };
+                const match = content.match(/const databaseHarga = \{([\s\S]*?)\};/);
+                
+                if (match && match[1]) {
+                    const dataBlock = match[1];
+                    let importedCount = 0;
+
+                    // Parse baris per baris: "KEY": "VALUE"
+                    // Regex: "(.+)": "(.+)"
+                    const lineRegex = /"(.+)": "(.+)"/g;
+                    let lineMatch;
+
+                    while ((lineMatch = lineRegex.exec(dataBlock)) !== null) {
+                        const key = lineMatch[1]; // Nama Produk
+                        const val = lineMatch[2]; // Harga
+
+                        // Cari input di tabel yang cocok
+                        // Kita cari index berdasarkan array productCatalog
+                        // Kuncinya formatnya: "HARGA NORMAL| NAMA" atau "HARGA PROMO| NAMA"
+                        
+                        if (key.includes('HARGA NORMAL| ')) {
+                            const productName = key.replace('HARGA NORMAL| ', '');
+                            const index = productCatalog.indexOf(productName);
+                            if (index !== -1) {
+                                const input = document.getElementById(`normal-price-${index}`);
+                                if (input) {
+                                    input.value = val;
+                                    // Simpen ke localStorage juga biar aman refresh
+                                    localStorage.setItem(`harga_normal_${productName}`, val);
+                                    importedCount++;
+                                }
+                            }
+                        } else if (key.includes('HARGA PROMO| ')) {
+                            const productName = key.replace('HARGA PROMO| ', '');
+                            const index = productCatalog.indexOf(productName);
+                            if (index !== -1) {
+                                const input = document.getElementById(`promo-price-${index}`);
+                                if (input) {
+                                    input.value = val;
+                                    localStorage.setItem(`harga_promo_${productName}`, val);
+                                }
+                            }
+                        }
+                    }
+                    alert(`✅ Berhasil import data untuk ${importedCount} produk!`);
+                } else {
+                    alert("❌ Gagal baca data harga dari file script ini. Pastikan formatnya bener.");
+                }
+                
+                // Reset input biar bisa pilih file yang sama lagi
+                fileInput.value = '';
+            };
+            reader.readAsText(file);
         });
     }
 
